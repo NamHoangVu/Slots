@@ -1,0 +1,21 @@
+/* index.css – reset Vite-standardene som dytter ting til venstre */
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #1a1a1a;
+  color: #fff;
+  font-family: system-ui, sans-serif;
+}
+
+/* Sentrér hele appen fra rot-elementet */
+#root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,0 +1,160 @@
+/* Global */
+body {
+  margin: 0;
+  background-color: #1a1a1a;
+  font-family: system-ui, sans-serif;
+  color: #fff;
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Kort */
+.slot-box {
+  width: 600px;
+  max-width: 96vw;
+  text-align: center;
+  background: #222;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Topp */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.balance {
+  background: #111;
+  border: 1px solid #333;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+/* Reels */
+.reels {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+.reels-5 { grid-template-columns: repeat(5, 1fr); }
+
+/* Hjul-vindu */
+.reel-window {
+  --cell-size: 70px;
+  width: 100%;
+  height: calc(var(--cell-size) * 5);
+  overflow: hidden;
+  background: #111;
+  border-radius: 12px;
+  border: 1px solid #333;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.25);
+}
+.reel-track {
+  display: flex;
+  flex-direction: column;
+}
+.reel-track.spinning {
+  animation-name: reelSpin;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.reel-track.stopped { transform: translateY(0); }
+
+/* Celler og symboler */
+.cell {
+  height: var(--cell-size);
+  display: grid;
+  place-items: center;
+  background: #333;
+  border-bottom: 1px solid #2a2a2a;
+}
+.cell:last-child { border-bottom: none; }
+
+.symbol-img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* Glow KUN for celler som er med i gevinst-sekvensen */
+.win-cell {
+  outline: 2px solid #22c55e;
+  box-shadow: 0 0 12px #22c55e88 inset, 0 0 10px #22c55e66;
+}
+
+/* Bonus/Spesialsymboler (visuelle hint) */
+.cell img[alt="cat"] {
+  border: 2px solid gold;
+  box-shadow: 0 0 8px gold;
+}
+.cell img[alt="wild"] {
+  border: 2px solid #0ea5e9;
+  box-shadow: 0 0 8px #0ea5e9;
+}
+.cell img[alt="scatter"] {
+  border: 2px solid #e11d48;
+  box-shadow: 0 0 8px #e11d48;
+}
+
+/* Innsatsknapper */
+.bet-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+}
+.bet-buttons button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s, opacity 0.2s;
+}
+.bet-buttons button:hover:not(:disabled) { background: #1d4ed8; }
+.bet-buttons button:active:not(:disabled) { transform: scale(0.95); }
+.bet-buttons button:disabled { background: #555; cursor: not-allowed; opacity: 0.75; }
+.bet-buttons button.active { background: #16a34a; }
+
+/* Spin-knapp – samme stil */
+.controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+.controls button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s, opacity 0.2s;
+}
+.controls button:hover:not(:disabled) { background: #1d4ed8; }
+.controls button:active:not(:disabled) { transform: scale(0.95); }
+.controls button:disabled { background: #555; cursor: not-allowed; opacity: 0.75; }
+
+/* Meldinger */
+.message { margin-top: 10px; font-size: 15px; }
+
+/* Animasjon for rulling (lengde matcher strip-lengde = 40) */
+@keyframes reelSpin {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(calc(-1 * var(--cell-size) * 40)); }
+}
