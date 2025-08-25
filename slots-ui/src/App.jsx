@@ -6,14 +6,13 @@ import nam from "./assets/faces/nam.png";
 import emil from "./assets/faces/emil.png";
 import henrik from "./assets/faces/henrik.png";
 import bilka from "./assets/faces/blika.png";
-import cat from "./assets/faces/cat.png";         // bonus
-import wild from "./assets/faces/wild.png";       // wild (erstatter)
-import scatter from "./assets/faces/scatter.png"; // scatter (free spins)
+import wild from "./assets/faces/wild.png";
+import scatter from "./assets/faces/scatter.png";
 
 const API_URL = "http://localhost:3000/api/slots";
 
 // nøkkel -> bilde
-const SYMBOLS = { nam, emil, henrik, bilka, cat, wild, scatter };
+const SYMBOLS = { nam, emil, henrik, bilka, wild, scatter };
 
 // faste innsatser
 const FIXED_BETS = [2, 5, 10, 20, 50, 100];
@@ -45,8 +44,7 @@ export default function App() {
   );
   const [spinning, setSpinning] = useState(Array(5).fill(false));
   const [win, setWin] = useState(null);
-  const [bonus, setBonus] = useState(false);
-  const [winningRows, setWinningRows] = useState([]); // [{row, symbol, streak, lineWin}]
+  const [winningRows, setWinningRows] = useState([]); // beholdes for glow
   const [error, setError] = useState("");
 
   // 5 hjul-striper for animasjonen
@@ -55,7 +53,6 @@ export default function App() {
   async function spin() {
     setError("");
     setWin(null);
-    setBonus(false);
     setWinningRows([]);
 
     // Bruk låst innsats hvis vi er i free spins, ellers valgt innsats
@@ -66,22 +63,16 @@ export default function App() {
       setError("Velg en innsats først!");
       return;
     }
-    // trekk kun fra saldo hvis vi ikke har free spins
     if (freeSpins <= 0 && betNum > balance) {
       setError("Ikke nok saldo til denne innsatsen.");
       return;
     }
 
-    // Hvis denne spinn-runden starter en free-spin-periode (dvs. vi er ikke i free spins nå),
-    // og vi eventuelt skulle utløse freeSpins senere, så må vi vite hvilken innsats som låses.
-    // Derfor: husk "bet" som kan låses etterpå.
     const betToLockIfFreeSpinsAwarded = betNum;
 
     if (freeSpins > 0) {
-      // bruker et av free-spinsene
       setFreeSpins((f) => f - 1);
     } else {
-      // betal for spinn
       setBalance((b) => b - betNum);
     }
 
@@ -105,7 +96,6 @@ export default function App() {
     } catch (e) {
       setSpinning(Array(5).fill(false));
       setError(e.message);
-      // refunder innsats hvis det ikke var free spin
       if (freeSpins <= 0) setBalance((b) => b + betNum);
       return;
     }
@@ -120,7 +110,6 @@ export default function App() {
           return next;
         });
 
-        // legg inn kolonnen fra resultatet
         const colSymbols = data.grid.map((row) => row[col]);
         setResultGrid((prev) => {
           const g = prev.map((row) => [...row]);
@@ -128,27 +117,17 @@ export default function App() {
           return g;
         });
 
-        // når siste hjul stopper: sett gevinst osv.
         if (col === 4) {
           setWin(data.win);
-          setBonus(data.bonus);
           setWinningRows(data.winningRows || []);
           if (data.win > 0) setBalance((b) => b + data.win);
 
-          // Håndter free spins tildelt i dette spinnet:
           if (data.freeSpins > 0) {
-            // Hvis vi ikke var i free spins fra før, LÅS innsatsen til den vi brukte nå
             if (freeSpins <= 0) setLockedBet(betToLockIfFreeSpinsAwarded);
             setFreeSpins((f) => f + data.freeSpins);
           } else {
-            // Hvis vi var i free spins og det akkurat var siste (dvs. nå 0) og vi fikk ikke flere,
-            // lås opp innsatsen igjen
-            // NB: vi reduserte freeSpins i starten av spin(). Her kan vi sjekke nåværende verdi.
-            // Hvis den er 0 etter dette spinnet og vi ikke fikk nye, så unlock.
             setFreeSpins((current) => {
-              if (current === 0) {
-                setLockedBet(null);
-              }
+              if (current === 0) setLockedBet(null);
               return current;
             });
           }
@@ -158,20 +137,20 @@ export default function App() {
   }
 
   const spinningNow = spinning.some(Boolean);
-  const isLocked = freeSpins > 0; // lås innsats i free spins
+  const isLocked = freeSpins > 0;
   const disabled = spinningNow || (!isLocked && (!bet || bet > balance));
 
   return (
     <div className="app-container">
       <div className="slot-box">
         <div className="topbar">
-          <div>🎰 Slots (5x5)</div>
+          <div>🎰 Slots Game</div>
           <div className="balance">
             Saldo: <strong>{balance} kr</strong>
           </div>
         </div>
 
-        {/* Info-linje (bet eller free spins) */}
+        {/* Info-linje */}
         <div style={{ marginBottom: 8, opacity: 0.9 }}>
           {freeSpins > 0 ? (
             <span>
@@ -213,10 +192,7 @@ export default function App() {
                   <div className="reel-track stopped">
                     {Array.from({ length: 5 }, (_, r) => {
                       const key = resultGrid[r][col];
-
-                      // Finn vinner-info for denne raden (hvis noen)
                       const winInfo = winningRows.find((w) => w.row === r);
-                      // Glow KUN for celler som inngår i gevinst-sekvensen: kolonner 0..(streak-1)
                       const shouldGlow = !!winInfo && col < winInfo.streak;
 
                       return (
@@ -236,7 +212,7 @@ export default function App() {
           ))}
         </div>
 
-        {/* Innsats-knapper (deaktiveres når free spins er aktiv) */}
+        {/* Innsats-knapper */}
         <div className="bet-buttons">
           {FIXED_BETS.map((val) => (
             <button
@@ -255,7 +231,7 @@ export default function App() {
 
         {/* Spin-knapp */}
         <div className="controls">
-          <button onClick={spin} disabled={spinningNow || (!isLocked && (!bet || bet > balance))}>
+          <button onClick={spin} disabled={disabled}>
             {spinningNow ? "Spinner..." : "Spin"}
           </button>
         </div>
@@ -264,26 +240,13 @@ export default function App() {
         {error && <div className="message" style={{ color: "crimson" }}>❌ {error}</div>}
 
         {win !== null && (
-          <>
-            <div className="message">
-              {win > 0 ? (
-                <strong>🎉 Du vant {win} kr!</strong>
-              ) : (
-                <span>Ingen gevinst denne gangen.</span>
-              )}
-              {bonus && <div>🐱 Cat-bonus utløst!</div>}
-            </div>
-
-            {winningRows.length > 0 && (
-              <div className="message">
-                {winningRows.map((w, i) => (
-                  <div key={i}>
-                    Rad {w.row + 1}: {w.streak} på rad ({w.symbol}) — +{w.lineWin} kr
-                  </div>
-                ))}
-              </div>
+          <div className="message">
+            {win > 0 ? (
+              <strong>🎉 Du vant {win} kr!</strong>
+            ) : (
+              <span>Ingen gevinst denne gangen.</span>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>

@@ -93,11 +93,6 @@ body {
   box-shadow: 0 0 12px #22c55e88 inset, 0 0 10px #22c55e66;
 }
 
-/* Bonus/Spesialsymboler (visuelle hint) */
-.cell img[alt="cat"] {
-  border: 2px solid gold;
-  box-shadow: 0 0 8px gold;
-}
 .cell img[alt="wild"] {
   border: 2px solid #0ea5e9;
   box-shadow: 0 0 8px #0ea5e9;
