@@ -1,0 +1,10 @@
+{
+  "name": "slotsgame-root",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix Slots\" \"npm run dev --prefix slots-ui\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
