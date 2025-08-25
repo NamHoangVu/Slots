@@ -19,7 +19,7 @@ export default function Login({ onLogin }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Innlogging feilet");
 
-      onLogin(data); // sender brukerdata til App.jsx
+      onLogin(data);
     } catch (err) {
       setError(err.message);
     }
@@ -46,27 +46,29 @@ export default function Login({ onLogin }) {
   }
 
   return (
-    <div className="login-box">
-      <h2>🎰 Slots Login</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form>
-        <input
-          type="text"
-          placeholder="Brukernavn"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Passord"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <div className="login-buttons">
-          <button onClick={handleLogin}>Logg inn</button>
-          <button onClick={handleRegister}>Registrer</button>
-        </div>
-      </form>
+    <div className="login-container">
+      <div className="login-box">
+        <h2>🎰 Slots Login</h2>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <form>
+          <input
+            type="text"
+            placeholder="Brukernavn"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Passord"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <div className="login-buttons">
+            <button onClick={handleLogin}>Logg inn</button>
+            <button onClick={handleRegister}>Registrer</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

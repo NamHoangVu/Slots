@@ -33,6 +33,23 @@
   font-weight: bold;
 }
 
+/* === Logout-knapp === */
+.logout-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 10px;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+}
+
 /* === Reels === */
 .reels {
   display: flex;
@@ -97,7 +114,7 @@
 
 /* === Vinner-glow === */
 .win-cell {
-  box-shadow: 0 0 15px 4px #4cafef;
+  box-shadow: 0 0 15px 4px #00ff66; 
   border-radius: 12px;
 }
 
