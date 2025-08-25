@@ -1,8 +1,8 @@
 // games/slots.js
-// Symbolnøkler må matche frontenden (cat er fjernet)
+// Symbolnøkler må matche frontenden
 const ALL = ["nam", "emil", "henrik", "bilka", "wild", "scatter"];
 
-// Fisher–Yates shuffle for å unngå mønstre i stripene
+// Fisher–Yates shuffle
 function shuffle(arr) {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
@@ -21,19 +21,16 @@ function buildStrip(weights) {
   return shuffle(strip);
 }
 
-/**
- * Hjul (reels) – vanlige symboler like vanlige, wild/scatter litt sjeldnere.
- * Justér tallene om du vil endre RTP/volatilitet.
- */
+// Hjul (wild og scatter er sjeldne)
 const REELS = [
-  buildStrip({ nam: 28, emil: 28, henrik: 28, bilka: 28, wild: 5, scatter: 5 }),
-  buildStrip({ nam: 29, emil: 27, henrik: 28, bilka: 28, wild: 5, scatter: 5 }),
-  buildStrip({ nam: 28, emil: 29, henrik: 27, bilka: 28, wild: 5, scatter: 5 }),
-  buildStrip({ nam: 28, emil: 28, henrik: 29, bilka: 27, wild: 5, scatter: 5 }),
-  buildStrip({ nam: 27, emil: 28, henrik: 28, bilka: 29, wild: 5, scatter: 5 }),
+  buildStrip({ nam: 28, emil: 28, henrik: 26, bilka: 26, wild: 3, scatter: 4 }),
+  buildStrip({ nam: 26, emil: 28, henrik: 28, bilka: 26, wild: 3, scatter: 4 }),
+  buildStrip({ nam: 28, emil: 26, henrik: 28, bilka: 26, wild: 3, scatter: 4 }),
+  buildStrip({ nam: 27, emil: 27, henrik: 27, bilka: 25, wild: 3, scatter: 4 }),
+  buildStrip({ nam: 26, emil: 26, henrik: 28, bilka: 28, wild: 3, scatter: 4 }),
 ];
 
-// 5x5 grid ved å stoppe hvert hjul på tilfeldig indeks og lese 5 sammenhengende symboler
+// 5x5 grid ved å stoppe hvert hjul på tilfeldig indeks og lese 5 symboler
 function spinSlots() {
   const rows = 5;
   const cols = 5;
@@ -49,44 +46,34 @@ function spinSlots() {
   return grid;
 }
 
-// Payouts (multiplikatorer av innsats)
+// Payouts
 const PAY = { 3: 2, 4: 5, 5: 10 };
 
-/**
- * Gevinstlogikk:
- * - Kun sekvens FRA VENSTRE teller (klassisk line 1).
- * - Wild kan erstatte hvilket som helst symbol i sekvensen.
- * - Scatter teller ikke i linjer, men 3+ hvor som helst gir free spins.
- * - bonus-feltet beholdes for frontend-kompatibilitet (er alltid false nå).
- */
+// Gevinstlogikk
 function calculateWin(grid, bet) {
   let win = 0;
-  let bonus = false; // cat er fjernet
+  let bonus = false;
   let freeSpins = 0;
   const winningRows = [];
 
   // Scatter: 3+ hvor som helst
   const scatterCount = grid.flat().filter((s) => s === "scatter").length;
-  if (scatterCount >= 3) freeSpins = 5; // evt. justér
+  if (scatterCount >= 3) freeSpins = 5;
 
-  // Hver rad: sekvens fra venstre, wild kan erstatte, scatter bryter linje
   for (let r = 0; r < 5; r++) {
     let symbol = grid[r][0];
-    if (symbol === "scatter") continue; // scatter kan ikke starte en linje
+    if (symbol === "scatter") continue;
 
     let streak = 1;
     for (let c = 1; c < 5; c++) {
       const cur = grid[r][c];
-      if (cur === "scatter") break; // scatter bryter linjen
+      if (cur === "scatter") break;
 
       const matches = cur === symbol || cur === "wild" || symbol === "wild";
       if (matches) {
-        // Hvis første hittil er wild og vi ser et ekte symbol, lås inn det
         if (symbol === "wild" && cur !== "wild") symbol = cur;
         streak++;
-      } else {
-        break;
-      }
+      } else break;
     }
 
     if (streak >= 3) {
