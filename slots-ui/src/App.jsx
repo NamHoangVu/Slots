@@ -1,7 +1,8 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import "./App.css";
+import Login from "./Login";
 
-// Importer symbol-bildene (må finnes i /src/assets/faces/)
+// Importer symbol-bildene
 import nam from "./assets/faces/nam.png";
 import emil from "./assets/faces/emil.png";
 import henrik from "./assets/faces/henrik.png";
@@ -26,17 +27,10 @@ function makeStrip(len = 40) {
 }
 
 export default function App() {
-  // saldo lagres i localStorage
-  const [balance, setBalance] = useState(() => {
-    const saved = localStorage.getItem("balance");
-    return saved ? Number(saved) : 1000;
-  });
-  useEffect(() => {
-    localStorage.setItem("balance", String(balance));
-  }, [balance]);
+  const [user, setUser] = useState(null); // {id, username, balance}
 
-  const [bet, setBet] = useState(null);                 // valgt innsats (bruker)
-  const [lockedBet, setLockedBet] = useState(null);     // innsats låst under free spins
+  const [bet, setBet] = useState(null);
+  const [lockedBet, setLockedBet] = useState(null);
   const [freeSpins, setFreeSpins] = useState(0);
 
   const [resultGrid, setResultGrid] = useState(
@@ -44,18 +38,17 @@ export default function App() {
   );
   const [spinning, setSpinning] = useState(Array(5).fill(false));
   const [win, setWin] = useState(null);
-  const [winningRows, setWinningRows] = useState([]); // beholdes for glow
+  const [winningRows, setWinningRows] = useState([]);
   const [error, setError] = useState("");
 
-  // 5 hjul-striper for animasjonen
   const strips = useMemo(() => Array.from({ length: 5 }, () => makeStrip(40)), []);
 
   async function spin() {
+    if (!user) return; // må være logget inn
     setError("");
     setWin(null);
     setWinningRows([]);
 
-    // Bruk låst innsats hvis vi er i free spins, ellers valgt innsats
     const activeBet = freeSpins > 0 ? lockedBet : bet;
     const betNum = Number(activeBet);
 
@@ -63,7 +56,7 @@ export default function App() {
       setError("Velg en innsats først!");
       return;
     }
-    if (freeSpins <= 0 && betNum > balance) {
+    if (freeSpins <= 0 && betNum > user.balance) {
       setError("Ikke nok saldo til denne innsatsen.");
       return;
     }
@@ -73,14 +66,12 @@ export default function App() {
     if (freeSpins > 0) {
       setFreeSpins((f) => f - 1);
     } else {
-      setBalance((b) => b - betNum);
+      setUser((u) => ({ ...u, balance: u.balance - betNum }));
     }
 
-    // start animasjon
     setSpinning(Array(5).fill(true));
     setResultGrid(Array.from({ length: 5 }, () => Array(5).fill("")));
 
-    // hent resultat fra API
     let data;
     try {
       const res = await fetch(API_URL, {
@@ -96,11 +87,12 @@ export default function App() {
     } catch (e) {
       setSpinning(Array(5).fill(false));
       setError(e.message);
-      if (freeSpins <= 0) setBalance((b) => b + betNum);
+      if (freeSpins <= 0) {
+        setUser((u) => ({ ...u, balance: u.balance + betNum }));
+      }
       return;
     }
 
-    // stopp hjul en etter en
     const stopDelays = [1000, 1600, 2200, 2800, 3400];
     [0, 1, 2, 3, 4].forEach((col) => {
       setTimeout(() => {
@@ -120,7 +112,9 @@ export default function App() {
         if (col === 4) {
           setWin(data.win);
           setWinningRows(data.winningRows || []);
-          if (data.win > 0) setBalance((b) => b + data.win);
+          if (data.win > 0) {
+            setUser((u) => ({ ...u, balance: u.balance + data.win }));
+          }
 
           if (data.freeSpins > 0) {
             if (freeSpins <= 0) setLockedBet(betToLockIfFreeSpinsAwarded);
@@ -138,7 +132,11 @@ export default function App() {
 
   const spinningNow = spinning.some(Boolean);
   const isLocked = freeSpins > 0;
-  const disabled = spinningNow || (!isLocked && (!bet || bet > balance));
+  const disabled = spinningNow || (!isLocked && (!bet || bet > (user?.balance || 0)));
+
+  if (!user) {
+    return <Login onLogin={(data) => setUser(data)} />;
+  }
 
   return (
     <div className="app-container">
@@ -146,11 +144,10 @@ export default function App() {
         <div className="topbar">
           <div>🎰 Slots Game</div>
           <div className="balance">
-            Saldo: <strong>{balance} kr</strong>
+            {user.username} | Saldo: <strong>{user.balance} kr</strong>
           </div>
         </div>
 
-        {/* Info-linje */}
         <div style={{ marginBottom: 8, opacity: 0.9 }}>
           {freeSpins > 0 ? (
             <span>
@@ -165,7 +162,6 @@ export default function App() {
           )}
         </div>
 
-        {/* Reels */}
         <div className="reels reels-5">
           {[0, 1, 2, 3, 4].map((col) => (
             <div key={col} className="reel">
@@ -212,16 +208,13 @@ export default function App() {
           ))}
         </div>
 
-        {/* Innsats-knapper */}
         <div className="bet-buttons">
           {FIXED_BETS.map((val) => (
             <button
               key={val}
-              disabled={spinningNow || isLocked || (freeSpins <= 0 && val > balance)}
+              disabled={spinningNow || isLocked || (freeSpins <= 0 && val > user.balance)}
               onClick={() => setBet(val)}
-              className={
-                (isLocked ? lockedBet === val : bet === val) ? "active" : ""
-              }
+              className={(isLocked ? lockedBet === val : bet === val) ? "active" : ""}
               title={isLocked ? "Innsats er låst under free spins" : ""}
             >
               {val} kr
@@ -229,14 +222,12 @@ export default function App() {
           ))}
         </div>
 
-        {/* Spin-knapp */}
         <div className="controls">
           <button onClick={spin} disabled={disabled}>
             {spinningNow ? "Spinner..." : "Spin"}
           </button>
         </div>
 
-        {/* Meldinger */}
         {error && <div className="message" style={{ color: "crimson" }}>❌ {error}</div>}
 
         {win !== null && (

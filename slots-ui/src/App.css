@@ -1,155 +1,225 @@
-/* Global */
-body {
-  margin: 0;
-  background-color: #1a1a1a;
-  font-family: system-ui, sans-serif;
-  color: #fff;
-}
-
+/* === Container og layout === */
 .app-container {
-  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 100vh;
+  background: #1e1e1e;
+  color: #fff;
+  font-family: Arial, sans-serif;
 }
 
-/* Kort */
 .slot-box {
-  width: 600px;
-  max-width: 96vw;
-  text-align: center;
-  background: #222;
+  background: #2a2a2a;
   padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
 }
 
-/* Topp */
 .topbar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  font-weight: 600;
-  margin-bottom: 12px;
+  align-items: center;
+  margin-bottom: 10px;
 }
+
 .balance {
   background: #111;
-  border: 1px solid #333;
-  padding: 6px 10px;
-  border-radius: 10px;
-  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: bold;
 }
 
-/* Reels */
+/* === Reels === */
 .reels {
-  display: grid;
-  gap: 12px;
-  margin: 12px 0 16px;
+  display: flex;
+  justify-content: center;
+  margin: 15px 0;
+  gap: 10px; /* mellomrom mellom hjulene */
 }
-.reels-5 { grid-template-columns: repeat(5, 1fr); }
 
-/* Hjul-vindu */
-.reel-window {
-  --cell-size: 70px;
-  width: 100%;
-  height: calc(var(--cell-size) * 5);
-  overflow: hidden;
-  background: #111;
+.reel {
+  width: 80px;
+  height: 320px;
+  background: #1a1a1a;
   border-radius: 12px;
-  border: 1px solid #333;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.25);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
 }
-.reel-track {
+
+.reel-window {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
+
+.reel-track {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.5s ease-out;
+}
+
 .reel-track.spinning {
-  animation-name: reelSpin;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
+  animation: spin 1s linear infinite;
 }
-.reel-track.stopped { transform: translateY(0); }
 
-/* Celler og symboler */
+@keyframes spin {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
 .cell {
-  height: var(--cell-size);
-  display: grid;
-  place-items: center;
-  background: #333;
-  border-bottom: 1px solid #2a2a2a;
+  width: 100%;
+  height: 64px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3px; /* mellomrom mellom rutene */
 }
-.cell:last-child { border-bottom: none; }
 
+/* === Symboler === */
 .symbol-img {
-  width: 50px;
-  height: 50px;
+  width: 55px;          /* litt mindre enn før */
+  height: 55px;
   object-fit: cover;
+  border-radius: 10px;
+}
+
+/* === Vinner-glow === */
+.win-cell {
+  box-shadow: 0 0 15px 4px #4cafef;
+  border-radius: 12px;
+}
+
+/* Wild = gul glow */
+.cell img[alt="wild"] {
+  box-shadow: 0 0 15px 4px gold;
+  border-radius: 12px;
+}
+
+/* Scatter = rød glow */
+.cell img[alt="scatter"] {
+  box-shadow: 0 0 15px 4px red;
+  border-radius: 12px;
+}
+
+/* === Knapper === */
+.bet-buttons {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bet-buttons button {
+  background: #1976d2;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.bet-buttons button:hover:not(:disabled) {
+  background: #1565c0;
+}
+
+.bet-buttons button:disabled {
+  background: #444;
+  cursor: not-allowed;
+}
+
+.bet-buttons button.active {
+  background: #2ecc71;
+}
+
+/* Spin-knapp */
+.controls {
+  margin-top: 12px;
+}
+
+.controls button {
+  background: #1976d2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.controls button:hover:not(:disabled) {
+  background: #1565c0;
+}
+
+.controls button:disabled {
+  background: #444;
+  cursor: not-allowed;
+}
+
+/* === Meldinger === */
+.message {
+  margin-top: 12px;
+  font-size: 1rem;
+}
+
+/* === Login-side === */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #1e1e1e;
+}
+
+.login-box {
+  background: #2a2a2a;
+  padding: 30px;
+  border-radius: 12px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.login-box h2 {
+  margin-bottom: 20px;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: none;
   border-radius: 6px;
 }
 
-/* Glow KUN for celler som er med i gevinst-sekvensen */
-.win-cell {
-  outline: 2px solid #22c55e;
-  box-shadow: 0 0 12px #22c55e88 inset, 0 0 10px #22c55e66;
-}
-
-.cell img[alt="wild"] {
-  border: 2px solid #0ea5e9;
-  box-shadow: 0 0 8px #0ea5e9;
-}
-.cell img[alt="scatter"] {
-  border: 2px solid #e11d48;
-  box-shadow: 0 0 8px #e11d48;
-}
-
-/* Innsatsknapper */
-.bet-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 12px;
-}
-.bet-buttons button {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 8px;
-  background: #2563eb;
+.login-box button {
+  background: #1976d2;
   color: white;
-  font-weight: 600;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s, opacity 0.2s;
-}
-.bet-buttons button:hover:not(:disabled) { background: #1d4ed8; }
-.bet-buttons button:active:not(:disabled) { transform: scale(0.95); }
-.bet-buttons button:disabled { background: #555; cursor: not-allowed; opacity: 0.75; }
-.bet-buttons button.active { background: #16a34a; }
-
-/* Spin-knapp – samme stil */
-.controls {
-  display: flex;
-  justify-content: center;
+  font-weight: bold;
+  width: 100%;
   margin-top: 10px;
 }
-.controls button {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 8px;
-  background: #2563eb;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s, opacity 0.2s;
-}
-.controls button:hover:not(:disabled) { background: #1d4ed8; }
-.controls button:active:not(:disabled) { transform: scale(0.95); }
-.controls button:disabled { background: #555; cursor: not-allowed; opacity: 0.75; }
 
-/* Meldinger */
-.message { margin-top: 10px; font-size: 15px; }
-
-/* Animasjon for rulling (lengde matcher strip-lengde = 40) */
-@keyframes reelSpin {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(calc(-1 * var(--cell-size) * 40)); }
+.login-box button:hover {
+  background: #1565c0;
 }
