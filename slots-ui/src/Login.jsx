@@ -19,7 +19,8 @@ export default function Login({ onLogin }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Innlogging feilet");
 
-      onLogin(data);
+      // 🔹 sender med både brukernavn og saldo til parent
+      onLogin({ username: data.username, balance: data.balance });
     } catch (err) {
       setError(err.message);
     }
@@ -39,7 +40,8 @@ export default function Login({ onLogin }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Registrering feilet");
 
-      onLogin(data);
+      // 🔹 etter registrering, start med 1000kr (fra backend)
+      onLogin({ username, balance: data.balance ?? 1000 });
     } catch (err) {
       setError(err.message);
     }

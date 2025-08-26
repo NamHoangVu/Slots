@@ -15,7 +15,7 @@ const pool = new Pool({
   user: "postgres",         // ditt postgres-brukernavn
   host: "localhost",
   database: "slotsdb",      // databasen du laget
-  password: "vietnam123", // ← sett inn passordet ditt her
+  password: "vietnam123",   // ← sett inn passordet ditt her
   port: 5432,
 });
 
@@ -31,14 +31,41 @@ app.get("/", (req, res) => {
 });
 
 // spin-rute
-app.post("/api/slots", (req, res) => {
-  const { bet } = req.body;
+app.post("/api/slots", async (req, res) => {
+  const { username, bet } = req.body;
   if (!bet || bet <= 0) return res.status(400).json({ error: "Ugyldig innsats" });
 
-  const grid = spinSlots();
-  const { win, bonus, freeSpins, winningRows } = calculateWin(grid, bet);
+  try {
+    // hent bruker
+    const userResult = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: "Bruker ikke funnet" });
+    }
 
-  res.json({ grid, win, bonus, freeSpins, winningRows });
+    let balance = userResult.rows[0].balance;
+
+    if (balance < bet) {
+      return res.status(400).json({ error: "Ikke nok saldo" });
+    }
+
+    // trekk innsats
+    balance -= bet;
+
+    // spin slot
+    const grid = spinSlots();
+    const { win, bonus, freeSpins, winningRows } = calculateWin(grid, bet);
+
+    // legg til gevinst
+    balance += win;
+
+    // oppdater i databasen
+    await pool.query("UPDATE users SET balance = $1 WHERE username = $2", [balance, username]);
+
+    res.json({ grid, win, bonus, freeSpins, winningRows, balance });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Serverfeil" });
+  }
 });
 
 /* ---------------- USER API ---------------- */
@@ -51,68 +78,46 @@ app.post("/api/register", async (req, res) => {
   }
 
   try {
-    const hashed = await bcrypt.hash(password, 10);
-    const result = await pool.query(
-      "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id, username, balance",
-      [username, hashed]
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Sett start-balance = 1000
+    await pool.query(
+      "INSERT INTO users (username, password, balance) VALUES ($1, $2, $3)",
+      [username, hashedPassword, 1000]
     );
-    res.json(result.rows[0]);
+
+    res.json({ message: "Bruker registrert med 1000kr startbalanse" });
   } catch (err) {
-    if (err.code === "23505") {
-      res.status(400).json({ error: "Brukernavn allerede i bruk" });
-    } else {
-      console.error(err);
-      res.status(500).json({ error: "Noe gikk galt" });
-    }
+    console.error(err);
+    res.status(500).json({ error: "Kunne ikke registrere bruker" });
   }
 });
 
 // login
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ error: "Mangler brukernavn eller passord" });
-  }
 
   try {
     const result = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
     if (result.rows.length === 0) {
-      return res.status(401).json({ error: "Feil brukernavn eller passord" });
+      return res.status(401).json({ error: "Ugyldig brukernavn eller passord" });
     }
 
     const user = result.rows[0];
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.status(401).json({ error: "Feil brukernavn eller passord" });
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) {
+      return res.status(401).json({ error: "Ugyldig brukernavn eller passord" });
     }
 
-    res.json({ id: user.id, username: user.username, balance: user.balance });
+    res.json({ message: "Login successful", username: user.username, balance: user.balance });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Noe gikk galt" });
+    res.status(500).json({ error: "Serverfeil" });
   }
 });
 
-// hent saldo og info
-app.get("/api/user/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await pool.query(
-      "SELECT id, username, balance, created_at FROM users WHERE id = $1",
-      [id]
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Bruker ikke funnet" });
-    }
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Noe gikk galt" });
-  }
-});
-
-/* ---------------- START SERVER ---------------- */
-
-app.listen(3000, () => {
-  console.log("Slots server running on http://localhost:3000");
+/* ---------------- SERVER ---------------- */
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server kjører på http://localhost:${PORT}`);
 });

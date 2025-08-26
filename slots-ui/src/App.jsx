@@ -44,6 +44,7 @@ export default function App() {
 
   useEffect(() => {
     if (user) {
+      // 🔹 lagre også balance sammen med brukeren
       localStorage.setItem("user", JSON.stringify({ ...user, balance }));
     }
   }, [user, balance]);
@@ -81,7 +82,8 @@ export default function App() {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bet: betNum }),
+        // 🔹 sender med brukernavn slik at backend vet hvem som spinner
+        body: JSON.stringify({ username: user.username, bet: betNum }),
       });
       if (!res.ok) {
         const e = await res.json().catch(() => ({}));
@@ -114,7 +116,13 @@ export default function App() {
         if (col === 4) {
           setWin(data.win);
           setWinningRows(data.winningRows || []);
-          if (data.win > 0) setBalance((b) => b + data.win);
+
+          // 🔹 bruk saldoen fra backend hvis den er sendt tilbake
+          if (typeof data.balance === "number") {
+            setBalance(data.balance);
+          } else if (data.win > 0) {
+            setBalance((b) => b + data.win);
+          }
 
           if (data.freeSpins > 0) {
             if (freeSpins <= 0) setLockedBet(betToLockIfFreeSpinsAwarded);
@@ -135,20 +143,23 @@ export default function App() {
   const disabled = spinningNow || (!isLocked && (!bet || bet > balance));
 
   function logout() {
-  localStorage.removeItem("user");
-  setUser(null);
-  setBalance(1000);
-  setBet(null);
-  setLockedBet(null);
-  setFreeSpins(0);
-  setResultGrid(Array.from({ length: 5 }, () => Array(5).fill(""))); 
-  setWin(null);
-  setWinningRows([]); // 👈 reset glow/vinnerlinjer
-}
-
+    localStorage.removeItem("user");
+    setUser(null);
+    setBalance(1000);
+    setBet(null);
+    setLockedBet(null);
+    setFreeSpins(0);
+    setResultGrid(Array.from({ length: 5 }, () => Array(5).fill("")));
+    setWin(null);
+    setWinningRows([]); // reset glow/vinnerlinjer
+  }
 
   if (!user) {
-    return <Login onLogin={setUser} />;
+    // 🔹 sørger for at vi får med balance fra Login.jsx
+    return <Login onLogin={(data) => {
+      setUser({ username: data.username });
+      setBalance(data.balance);
+    }} />;
   }
 
   return (
