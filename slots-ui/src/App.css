@@ -1,71 +1,94 @@
-/* === Container og layout === */
+/* === Global layout === */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  color: #fff;
+  background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #1a1a2e);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* === App container === */
 .app-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #1e1e1e;
-  color: #fff;
-  font-family: Arial, sans-serif;
 }
 
+/* === Slot box === */
 .slot-box {
-  background: #2a2a2a;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  background: rgba(30, 30, 35, 0.85);
+  backdrop-filter: blur(12px);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
   text-align: center;
-  max-width: 800px;
+  max-width: 820px;
   width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* === Topbar === */
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
 }
 
 .balance {
-  background: #111;
-  padding: 4px 10px;
-  border-radius: 6px;
+  background: rgba(20, 20, 20, 0.8);
+  padding: 6px 12px;
+  border-radius: 8px;
   font-weight: bold;
+  color: #4ade80; /* grønn neon */
 }
 
 /* === Logout-knapp === */
 .logout-btn {
-  background: #e74c3c;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
   border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
   cursor: pointer;
-  margin-left: 10px;
   font-weight: bold;
-  transition: 0.2s;
+  transition: 0.25s ease;
 }
 
 .logout-btn:hover {
-  background: #c0392b;
+  background: linear-gradient(135deg, #f87171, #ef4444);
+  transform: translateY(-2px);
 }
 
 /* === Reels === */
 .reels {
   display: flex;
   justify-content: center;
-  margin: 15px 0;
-  gap: 10px; /* mellomrom mellom hjulene */
+  margin: 20px 0;
+  gap: 12px;
 }
 
 .reel {
-  width: 80px;
+  width: 90px;
   height: 320px;
-  background: #1a1a1a;
+  background: rgba(10, 10, 15, 0.9);
   border-radius: 12px;
   overflow: hidden;
   display: flex;
   justify-content: center;
+  box-shadow: inset 0 0 16px rgba(255, 255, 255, 0.05);
 }
 
 .reel-window {
@@ -82,6 +105,7 @@
   transition: transform 0.5s ease-out;
 }
 
+/* === ORIGINAL SPIN ANIMASJON (BEHOLDT) === */
 .reel-track.spinning {
   animation: spin 1s linear infinite;
 }
@@ -95,63 +119,67 @@
   }
 }
 
+/* === Celler === */
 .cell {
   width: 100%;
   height: 64px;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 3px; /* mellomrom mellom rutene */
+  padding: 3px;
 }
 
 /* === Symboler === */
 .symbol-img {
-  width: 55px;          /* litt mindre enn før */
+  width: 55px;
   height: 55px;
   object-fit: cover;
   border-radius: 10px;
+  transition: transform 0.2s ease;
 }
 
 /* === Vinner-glow === */
 .win-cell {
-  box-shadow: 0 0 15px 4px #00ff66; 
+  box-shadow: 0 0 15px 5px #22c55e, 0 0 25px 10px rgba(34, 197, 94, 0.6);
   border-radius: 12px;
 }
 
 /* Wild = gul glow */
 .cell img[alt="wild"] {
-  box-shadow: 0 0 15px 4px gold;
+  box-shadow: 0 0 15px 5px gold, 0 0 25px 10px rgba(255, 215, 0, 0.6);
   border-radius: 12px;
 }
 
 /* Scatter = rød glow */
 .cell img[alt="scatter"] {
-  box-shadow: 0 0 15px 4px red;
+  box-shadow: 0 0 15px 5px crimson, 0 0 25px 10px rgba(220, 20, 60, 0.6);
   border-radius: 12px;
 }
 
-/* === Knapper === */
+/* === Bet-knapper === */
 .bet-buttons {
-  margin-top: 10px;
+  margin-top: 14px;
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .bet-buttons button {
-  background: #1976d2;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
-  transition: 0.2s;
+  transition: 0.25s ease;
 }
 
 .bet-buttons button:hover:not(:disabled) {
-  background: #1565c0;
+  background: rgba(99, 102, 241, 0.25);
+  border-color: #6366f1;
+  transform: translateY(-2px);
 }
 
 .bet-buttons button:disabled {
@@ -160,28 +188,31 @@
 }
 
 .bet-buttons button.active {
-  background: #2ecc71;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-color: #8b5cf6;
+  color: white;
 }
 
-/* Spin-knapp */
+/* === Spin-knapp === */
 .controls {
-  margin-top: 12px;
+  margin-top: 14px;
 }
 
 .controls button {
-  background: #1976d2;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 12px 28px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: bold;
-  transition: 0.2s;
+  transition: 0.25s ease;
 }
 
 .controls button:hover:not(:disabled) {
-  background: #1565c0;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  transform: translateY(-2px);
 }
 
 .controls button:disabled {
@@ -191,8 +222,9 @@
 
 /* === Meldinger === */
 .message {
-  margin-top: 12px;
+  margin-top: 14px;
   font-size: 1rem;
+  text-align: center;
 }
 
 /* === Login-side === */
@@ -201,16 +233,16 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: #1e1e1e;
 }
 
 .login-box {
-  background: #2a2a2a;
+  background: rgba(30, 30, 35, 0.9);
   padding: 30px;
-  border-radius: 12px;
-  width: 300px;
+  border-radius: 14px;
+  width: 320px;
   text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .login-box h2 {
@@ -219,24 +251,32 @@
 
 .login-box input {
   width: 100%;
-  padding: 10px;
-  margin: 8px 0;
+  padding: 12px;
+  margin: 10px 0;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.login-box input::placeholder {
+  color: #bbb;
 }
 
 .login-box button {
-  background: #1976d2;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 12px 20px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
   width: 100%;
-  margin-top: 10px;
+  margin-top: 12px;
+  transition: 0.25s ease;
 }
 
 .login-box button:hover {
-  background: #1565c0;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  transform: translateY(-2px);
 }
