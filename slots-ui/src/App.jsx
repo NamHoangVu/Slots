@@ -250,15 +250,18 @@ export default function App() {
         </div>
 
         {error && <div className="message" style={{ color: "crimson" }}>❌ {error}</div>}
-        {win !== null && (
+        {(win !== null || freeSpins > 0) && (
           <div className="message">
             {win > 0 ? (
               <strong>🎉 Du vant {win} kr!</strong>
+            ) : freeSpins > 0 && lockedBet ? (
+              <strong>🎁 Du har vunnet {freeSpins} free spins!</strong>
             ) : (
               <span>Ingen gevinst denne gangen.</span>
             )}
           </div>
         )}
+
       </div>
     </div>
   );
