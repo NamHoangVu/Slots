@@ -10,7 +10,10 @@ import bilka from "./assets/faces/blika.png";
 import wild from "./assets/faces/wild.png";
 import scatter from "./assets/faces/scatter.png";
 
-const API_URL = "http://localhost:3000/api/slots";
+// 🔁 BRUK ENV I STEDET FOR LOCALHOST
+const API = import.meta.env.VITE_API_URL; // f.eks. https://slots-api-14gp.onrender.com
+// console.log("API base =", API); // (valgfritt) hjelper å verifisere i prod
+
 const SYMBOLS = { nam, emil, henrik, bilka, wild, scatter };
 const FIXED_BETS = [2, 5, 10, 20, 50, 100];
 
@@ -79,7 +82,7 @@ export default function App() {
 
     let data;
     try {
-      const res = await fetch(API_URL, {
+      const res = await fetch(`${API}/api/slots`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // 🔹 sender med brukernavn slik at backend vet hvem som spinner
