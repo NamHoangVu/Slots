@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const API = import.meta.env.VITE_API_URL; // f.eks. https://slots-api-l4gp.onrender.com
+
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -10,19 +12,26 @@ export default function Login({ onLogin }) {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:3000/api/login", {
+      const res = await fetch(`${API}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Innlogging feilet");
+      // dersom nettverksfeil (CORS/URL), kaster fetch før res.json()
+      if (!res.ok) {
+        let msg = "Innlogging feilet";
+        try {
+          const data = await res.json();
+          if (data?.error) msg = data.error;
+        } catch {}
+        throw new Error(msg);
+      }
 
-      // 🔹 sender med både brukernavn og saldo til parent
+      const data = await res.json();
       onLogin({ username: data.username, balance: data.balance });
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Failed to fetch");
     }
   }
 
@@ -31,19 +40,25 @@ export default function Login({ onLogin }) {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:3000/api/register", {
+      const res = await fetch(`${API}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Registrering feilet");
+      if (!res.ok) {
+        let msg = "Registrering feilet";
+        try {
+          const data = await res.json();
+          if (data?.error) msg = data.error;
+        } catch {}
+        throw new Error(msg);
+      }
 
-      // 🔹 etter registrering, start med 1000kr (fra backend)
-      onLogin({ username, balance: data.balance ?? 1000 });
+      // backend returnerer bare message; startbalanse er 1000 i server
+      onLogin({ username, balance: 1000 });
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Failed to fetch");
     }
   }
 
